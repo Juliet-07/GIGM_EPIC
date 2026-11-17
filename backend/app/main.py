@@ -10,6 +10,7 @@ from app.database import make_engine, make_session_factory
 from app.models import Base
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+log = logging.getLogger("app")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -19,7 +20,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        Base.metadata.create_all(engine)
+        Base.metadata.create_all(engine)  # create the tables on startup if they don't exist
+        if settings.auto_seed:
+            from app.seed import seed_if_empty
+            with session_factory() as db:
+                if seed_if_empty(db):
+                    log.info("database was empty: seeded demo data")
         yield
         engine.dispose()
 
