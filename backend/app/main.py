@@ -1,12 +1,16 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
+from app.api import public
 from app.config import Settings, get_settings
 from app.database import make_engine, make_session_factory
+from app.errors import DomainError
 from app.models import Base
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -39,11 +43,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.session_factory = session_factory
     app.state.engine = engine
 
+    # ---- errors: one consistent shape, {"error": {"code", "message", ...}} -------------
+    @app.exception_handler(DomainError)
+    async def domain_error(_: Request, exc: DomainError):
+        return JSONResponse(status_code=exc.status_code, content={
+            "error": {"code": exc.code, "message": exc.message, **exc.extra}})
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(_: Request, exc: RequestValidationError):
+        fields = [{"field": ".".join(str(p) for p in e["loc"][1:]), "message": e["msg"]}
+                  for e in exc.errors()]
+        return JSONResponse(status_code=422, content={
+            "error": {"code": "validation_error", "message": "Invalid request", "fields": fields}})
+
     @app.get("/health", tags=["ops"])
     def health():
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return {"status": "ok"}
+
+    app.include_router(public.router)
 
     return app
 
