@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from app.api import public
+from app.api import public, admin
 from app.config import Settings, get_settings
 from app.database import make_engine, make_session_factory
 from app.errors import DomainError
@@ -63,6 +63,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(public.router)
+    app.include_router(admin.router)
 
     return app
 
