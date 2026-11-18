@@ -1,12 +1,12 @@
 """Customer-facing endpoints."""
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Header, Query, Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_now
-from app.schemas import FareQuote, TownOut, TripOut
-from app.services import trips
+from app.schemas import BookingCreate, BookingOut, FareQuote, TownOut, TripOut
+from app.services import bookings, trips
 
 router = APIRouter(prefix="/api", tags=["customer"])
 
@@ -35,3 +35,21 @@ def search(origin_id: int, destination_id: int,
         )
         for t, fare_cents in trips.search_trips(db, origin_id, destination_id, day, now)
     ]
+    
+@router.post("/bookings", response_model=BookingOut, status_code=201,
+             summary="Book seats on a trip")
+def book(body: BookingCreate, response: Response,
+         idempotency_key: str | None = Header(None, max_length=64),
+         db: Session = Depends(get_db), now: datetime = Depends(get_now)):
+    booking, created = bookings.create_booking(
+        db, trip_id=body.trip_id, passenger_name=body.passenger_name, seats=body.seats,
+        now=now, idempotency_key=idempotency_key,
+    )
+    if not created:
+        response.status_code = 200  # replay of an earlier identical request
+    return booking
+
+
+@router.get("/bookings/{reference}", response_model=BookingOut)
+def booking_detail(reference: str, db: Session = Depends(get_db)):
+    return bookings.get_booking(db, reference)
