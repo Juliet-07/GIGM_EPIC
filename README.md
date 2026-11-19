@@ -74,7 +74,7 @@ Sending the same request again with the same `Idempotency-Key` returns the origi
 
 # AI USE
 
-I used ChatGPT to research and compare backend technologies, which helped me settle on FastAPI for the project. I initially approached the backend using NestJS, which I am more familiar with, and used Claude as a reference to help translate the implementation into Python/FastAPI.
+I used ChatGPT to research and compare the python frameworks, which helped me settle on FastAPI for the project. I initially approached the backend using NestJS, which I am more familiar with, and used Claude as a reference to help translate the implementation into Python/FastAPI.
 
 I also used AI to explore implementation approaches and troubleshoot issues during development. I reviewed and adapted the suggestions, implemented the changes in my local repository, and used Pytest to verify the backend functionality and test key scenarios.
 
