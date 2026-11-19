@@ -1,4 +1,5 @@
 import logging
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -24,7 +25,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        Base.metadata.create_all(engine)  # create the tables on startup if they don't exist
+        Base.metadata.create_all(engine)
         if settings.auto_seed:
             from app.seed import seed_if_empty
             with session_factory() as db:
@@ -56,6 +57,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return JSONResponse(status_code=422, content={
             "error": {"code": "validation_error", "message": "Invalid request", "fields": fields}})
 
+    @app.middleware("http")
+    async def access_log(request: Request, call_next):
+        start = time.perf_counter()
+        response = await call_next(request)
+        ms = (time.perf_counter() - start) * 1000
+        if request.url.path.startswith("/api") or request.url.path == "/health":
+            log.info("request method=%s path=%s status=%s duration_ms=%.1f",
+                     request.method, request.url.path, response.status_code, ms)
+        return response
+    
     @app.get("/health", tags=["ops"])
     def health():
         with engine.connect() as conn:
