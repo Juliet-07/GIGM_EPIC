@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import BookingConfirmation from "../components/BookingConfirmation.jsx";
-import BookingForm from "../components/BookingForm.jsx";
-import TripCard from "../components/TripCard.jsx";
+import BookingConfirmation from "../component/BookingConfirmation.jsx";
+import BookingForm from "../component/BookingForm.jsx";
+import TripCard from "../component/TripCard.jsx";
 import {
   Alert,
   Button,
@@ -9,7 +9,7 @@ import {
   Field,
   Select,
   TextInput,
-} from "../components/ui.jsx";
+} from "../component/ui.jsx";
 import { api } from "../lib/api.js";
 import { localDate } from "../lib/format.js";
 
@@ -18,7 +18,7 @@ export default function BookingView() {
   const [originId, setOriginId] = useState("");
   const [destinationId, setDestinationId] = useState("");
   const [date, setDate] = useState(localDate(1));
-  const [trips, setTrips] = useState(null); // null = not searched yet
+  const [trips, setTrips] = useState(null);
   const [selected, setSelected] = useState(null);
   const [booking, setBooking] = useState(null);
   const [error, setError] = useState(null);

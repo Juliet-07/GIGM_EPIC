@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import TripTable from "../components/TripTable.jsx";
-import { Alert, Button } from "../components/ui.jsx";
+import TripTable from "../component/TripTable.jsx";
+import { Alert, Button } from "../component/ui.jsx";
 import { api } from "../lib/api.js";
 
 export default function AdminView() {
