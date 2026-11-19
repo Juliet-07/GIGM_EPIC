@@ -25,7 +25,6 @@ TRIPS = [
     ("Onitsha", "Lagos",   ("now", 20),         40, S.BOARDING),    # 8
     ("Abuja",   "Kano",    ("now", -180),       44, S.DEPARTED),    # 9
     ("Enugu",   "Onitsha", ("day", -1, "10:00"), 40, S.ARRIVED),    # 10
-    ("Lagos",   "Abuja",   ("day", 1, "15:00"), 44, S.SCHEDULED),   # 11
 ]
 
 # (trip number 1-based, passenger, seats)  -> 15 bookings
